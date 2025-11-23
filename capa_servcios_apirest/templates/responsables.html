@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Responsables de entrega | PDS-006{% endblock %}
+
+{% block page_header %}
+<h1>Responsables de entrega</h1>
+<p>
+  Técnicos o representantes de las empresas externas que entregan los equipos.
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="badge rounded-pill bg-light text-muted border">
+    Total: {{ responsables|length }}
+  </span>
+</div>
+
+<div class="card card-soft shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped table-hover align-middle mb-0">
+        <thead class="table-head-soft">
+          <tr>
+            <th>#</th>
+            <th>Documento</th>
+            <th>Nombre</th>
+            <th>Empresa</th>
+            <th>Teléfono / Email</th>
+            <th>Estado</th>
+            <th>Equipos asociados</th>
+            <th>Creado</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in responsables %}
+          <tr>
+            <td class="text-muted">{{ r.id }}</td>
+            <td><code>{{ r.documento }}</code></td>
+            <td><strong>{{ r.nombre }}</strong></td>
+            <td>{{ r.empresa.nombre if r.empresa else "-" }}</td>
+            <td>
+              <div>{{ r.telefono or "-" }}</div>
+              <small class="text-muted">{{ r.email or "" }}</small>
+            </td>
+            <td>
+              {% if r.activo %}
+                <span class="badge rounded-pill bg-success-subtle text-success">
+                  Activo
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-secondary-subtle text-secondary">
+                  Inactivo
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge rounded-pill bg-light text-muted border">
+                {{ r.equipos|length }}
+              </span>
+            </td>
+            <td>
+              <small class="text-muted">{{ r.creado_en }}</small>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-3">
+              No hay responsables de entrega registrados.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<p class="text-muted small mt-3">
+  API: <code>GET /api/responsables-entrega</code>,
+  <code>POST /api/responsables-entrega</code>,
+  <code>PUT /api/responsables-entrega/&lt;id&gt;</code>,
+  <code>DELETE /api/responsables-entrega/&lt;id&gt;</code>.
+</p>
+{% endblock %}

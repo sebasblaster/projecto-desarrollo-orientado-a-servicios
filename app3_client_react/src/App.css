@@ -1,0 +1,102 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+:root {
+  --primary: #6f42c1;
+  --primary-600: #5a2fa6;
+  --muted: #6b6b6b;
+  --surface: #ffffff;
+  --soft-bg: #f8f6fb;
+}
+
+/* General card styling */
+.card {
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(111,66,193,0.08);
+  padding: 1rem;
+}
+
+/* Buttons in purple theme */
+.btn-primary-like {
+  background: linear-gradient(180deg, var(--primary), var(--primary-600));
+  border: none;
+  color: #fff;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+}
+.btn-outline-primary-like {
+  color: var(--primary);
+  border: 1px solid rgba(111,66,193,0.2);
+  background: transparent;
+  border-radius: 8px;
+}
+
+/* Table styling */
+.table thead th {
+  background: linear-gradient(90deg, var(--primary), var(--primary-600));
+  color: #fff;
+  border: none;
+  vertical-align: middle;
+}
+.table tbody tr:hover {
+  background: rgba(111,66,193,0.03);
+}
+
+/* Badges */
+.badge.text-bg-light {
+  background: var(--soft-bg);
+  color: var(--muted);
+}
+
+/* Modal tweaks */
+.modal-content {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.modal-header {
+  background: linear-gradient(90deg, rgba(111,66,193,0.08), rgba(111,66,193,0.03));
+}
+
+/* Small helpers */
+.small-muted { color: var(--muted); }

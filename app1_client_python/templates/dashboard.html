@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Cliente HSRT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h4 mb-0">Dashboard – Resumen desde la API</h1>
+    <p class="text-muted mb-0" style="font-size:0.85rem;">
+      Visualizas datos leídos en tiempo real desde la capa de servicios (App1).
+    </p>
+  </div>
+</div>
+
+<!-- Card contenedora de los conteos -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white py-2">
+    <span class="fw-semibold" style="font-size:0.9rem;">Resumen de registros</span>
+  </div>
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col-6 col-md-3">
+        <div class="card border-0 bg-light-subtle card-hover text-center">
+          <div class="card-body py-2">
+            <div class="text-muted text-uppercase small mb-0">
+              Empresas externas
+            </div>
+            <div class="fs-4 fw-semibold">{{ empresas|length }}</div>
+            <a href="{{ url_for('empresas_view') }}" class="stretched-link"></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="card border-0 bg-light-subtle card-hover text-center">
+          <div class="card-body py-2">
+            <div class="text-muted text-uppercase small mb-0">
+              Ubicaciones
+            </div>
+            <div class="fs-4 fw-semibold">{{ ubicaciones|length }}</div>
+            {# <a href="{{ url_for('ubicaciones_view') }}" class="stretched-link"></a> #}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="card border-0 bg-light-subtle card-hover text-center">
+          <div class="card-body py-2">
+            <div class="text-muted text-uppercase small mb-0">
+              Responsables entrega
+            </div>
+            <div class="fs-4 fw-semibold">{{ responsables|length }}</div>
+            {# <a href="{{ url_for('responsables_view') }}" class="stretched-link"></a> #}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <div class="card border-0 bg-light-subtle card-hover text-center">
+          <div class="card-body py-2">
+            <div class="text-muted text-uppercase small mb-0">
+              Equipos
+            </div>
+            <div class="fs-4 fw-semibold">{{ equipos|length }}</div>
+            {# <a href="{{ url_for('equipos_view') }}" class="stretched-link"></a> #}
+          </div>
+        </div>
+      </div>
+
+      {% if usuarios is defined %}
+      <div class="col-6 col-md-3">
+        <div class="card border-0 bg-light-subtle card-hover text-center">
+          <div class="card-body py-2">
+            <div class="text-muted text-uppercase small mb-0">
+              Usuarios (API)
+            </div>
+            <div class="fs-4 fw-semibold">{{ usuarios|length }}</div>
+            {% if current_user() and current_user().rol == 'admin' %}
+              <a href="{{ url_for('usuarios_list') }}" class="stretched-link"></a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="mb-2">
+  <h2 class="h6 text-uppercase text-muted mb-3">Accesos rápidos</h2>
+</div>
+
+<div class="row g-3">
+  {% if current_user() and current_user().rol == 'admin' %}
+  <div class="col-12 col-md-4">
+    <a href="{{ url_for('usuarios_list') }}" class="text-decoration-none">
+      <div class="card border-0 shadow-sm card-hover h-100">
+        <div class="card-body">
+          <div class="fw-semibold mb-1">Gestión de usuarios</div>
+          <p class="text-muted mb-1" style="font-size:0.85rem;">
+            Crear, editar y eliminar usuarios que pueden operar el sistema.
+          </p>
+          <span class="badge bg-dark-subtle text-dark-emphasis">
+            Admin
+          </span>
+        </div>
+      </div>
+    </a>
+  </div>
+  {% endif %}
+
+  <div class="col-12 col-md-4">
+    <a href="{{ url_for('empresas_view') }}" class="text-decoration-none">
+      <div class="card border-0 shadow-sm card-hover h-100">
+        <div class="card-body">
+          <div class="fw-semibold mb-1">Empresas externas</div>
+          <p class="text-muted mb-1" style="font-size:0.85rem;">
+            Consulta y gestión de empresas proveedoras relacionadas con ingresos de equipos.
+          </p>
+          <span class="badge bg-primary-subtle text-primary">
+            Catálogo
+          </span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="card border-0 shadow-sm card-hover h-100 opacity-75">
+      <div class="card-body">
+        <div class="fw-semibold mb-1">Ubicaciones, Responsables, Equipos</div>
+        <p class="text-muted mb-1" style="font-size:0.85rem;">
+          Próximamente: vistas dedicadas para gestionar ubicaciones,
+          responsables de entrega y equipos desde el cliente HSRT.
+        </p>
+        <span class="badge bg-secondary-subtle text-secondary">
+          En construcción
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
