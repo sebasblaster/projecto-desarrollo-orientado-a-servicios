@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+{% block title %}Equipos | Cliente HSRT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h4 mb-0">Equipos</h1>
+    <p class="text-muted mb-0" style="font-size:0.9rem;">Listado de equipos registrados desde la capa de servicios.</p>
+  </div>
+  <div>
+    {% if current_user() and current_user().rol == 'admin' %}
+    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">
+      <i class="bi bi-plus-lg"></i> Crear equipo
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<form class="mb-3" method="get" action="{{ url_for('equipos_view') }}">
+  <div class="input-group">
+    <input name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Buscar por serie, marca, modelo o descripción">
+    <button class="btn btn-sm btn-outline-secondary" type="submit">Buscar</button>
+  </div>
+</form>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Tipo / Categoría</th>
+            <th>Marca / Modelo</th>
+            <th>Serie</th>
+            <th>Empresa</th>
+            <th>Responsable</th>
+            <th>Ubicación</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for e in equipos %}
+          <tr>
+            <td class="text-muted">{{ e.id }}</td>
+            <td>{{ e.tipo }} / {{ e.categoria }}</td>
+            <td>{{ e.marca or '-' }} / {{ e.modelo or '-' }}</td>
+            <td><code>{{ e.serie or '-' }}</code></td>
+            <td>{{ e.empresa.nombre if e.empresa else '-' }}</td>
+            <td>{{ e.responsable_entrega.nombre if e.responsable_entrega else '-' }}</td>
+            <td>{{ e.ubicacion.nombre if e.ubicacion else '-' }}</td>
+            <td>
+              <span class="badge bg-light text-dark">{{ e.estado }}</span>
+            </td>
+            <td class="text-end">
+              <div class="btn-group" role="group">
+                {% if current_user() and current_user().rol == 'admin' %}
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEdit"
+                  data-e='{{ e|tojson }}'
+                >
+                  Editar
+                </button>
+
+                <form method="post" action="{{ url_for('equipos_delete', eid=e.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar equipo?');">Eliminar</button>
+                </form>
+                {% else %}
+                <a class="btn btn-sm btn-outline-secondary" href="#">Ver</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="9" class="text-center text-muted py-3">No hay equipos registrados.</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if current_user() and current_user().rol == 'admin' %}
+<!-- Modal Crear -->
+<div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('equipos_create') }}">
+        <div class="modal-header">
+          <h5 class="modal-title">Crear equipo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">Tipo</label>
+              <select name="tipo" class="form-select form-select-sm">
+                <option value="tecnologico">Tecnológico</option>
+                <option value="biomedico">Biomédico</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Categoría</label>
+              <select name="categoria" class="form-select form-select-sm">
+                <option value="computo">Cómputo</option>
+                <option value="impresion">Impresión</option>
+                <option value="red">Red</option>
+                <option value="biomedico">Biomédico</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Marca</label>
+              <input name="marca" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Modelo</label>
+              <input name="modelo" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Serie</label>
+              <input name="serie" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Ubicación</label>
+              <select name="ubicacion_id" class="form-select form-select-sm" required>
+                <option value="">-- Seleccionar ubicación --</option>
+                {% for u in ubicaciones %}
+                <option value="{{ u.id }}">{{ u.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Empresa</label>
+              <select name="empresa_id" class="form-select form-select-sm" required>
+                <option value="">-- Seleccionar empresa --</option>
+                {% for emp in empresas %}
+                <option value="{{ emp.id }}">{{ emp.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Responsable entrega</label>
+              <select name="responsable_entrega_id" class="form-select form-select-sm" required>
+                <option value="">-- Seleccionar responsable --</option>
+                {% for r in responsables %}
+                <option value="{{ r.id }}">{{ r.nombre }} ({{ r.documento }})</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Descripción</label>
+              <input name="descripcion" class="form-control form-control-sm">
+            </div>
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm btn-primary">Crear equipo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" id="formEditE" action="#">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar equipo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="edit_e_id">
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">Tipo</label>
+              <select id="edit_e_tipo" name="tipo" class="form-select form-select-sm">
+                <option value="tecnologico">Tecnológico</option>
+                <option value="biomedico">Biomédico</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Categoría</label>
+              <select id="edit_e_categoria" name="categoria" class="form-select form-select-sm">
+                <option value="computo">Cómputo</option>
+                <option value="impresion">Impresión</option>
+                <option value="red">Red</option>
+                <option value="biomedico">Biomédico</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Marca</label>
+              <input id="edit_e_marca" name="marca" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Modelo</label>
+              <input id="edit_e_modelo" name="modelo" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Serie</label>
+              <input id="edit_e_serie" name="serie" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Ubicación</label>
+              <select id="edit_e_ubicacion" name="ubicacion_id" class="form-select form-select-sm" required>
+                <option value="">-- Seleccionar ubicación --</option>
+                {% for u in ubicaciones %}
+                <option value="{{ u.id }}">{{ u.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Empresa</label>
+              <select id="edit_e_empresa" name="empresa_id" class="form-select form-select-sm" required>
+                <option value="">-- Seleccionar empresa --</option>
+                {% for emp in empresas %}
+                <option value="{{ emp.id }}">{{ emp.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Responsable entrega</label>
+              <select id="edit_e_responsable" name="responsable_entrega_id" class="form-select form-select-sm" required>
+                <option value="">-- Seleccionar responsable --</option>
+                {% for r in responsables %}
+                <option value="{{ r.id }}">{{ r.nombre }} ({{ r.documento }})</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Descripción</label>
+              <input id="edit_e_descripcion" name="descripcion" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Estado</label>
+              <select id="edit_e_estado" name="estado" class="form-select form-select-sm">
+                <option value="ingresado">Ingresado</option>
+                <option value="en_revision">En revisión</option>
+                <option value="autorizado">Autorizado</option>
+                <option value="rechazado">Rechazado</option>
+                <option value="retirado">Retirado</option>
+              </select>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Condición</label>
+              <select id="edit_e_condicion" name="condicion" class="form-select form-select-sm">
+                <option value="operativo">Operativo</option>
+                <option value="averiado">Averiado</option>
+                <option value="contaminado">Contaminado</option>
+                <option value="desconocido">Desconocido</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm btn-primary">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+  var modalEdit = document.getElementById('modalEdit')
+  modalEdit.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget
+    var data = JSON.parse(button.getAttribute('data-e'))
+
+    document.getElementById('edit_e_id').value = data.id
+    document.getElementById('edit_e_tipo').value = data.tipo || 'tecnologico'
+    document.getElementById('edit_e_categoria').value = data.categoria || 'computo'
+    document.getElementById('edit_e_marca').value = data.marca || ''
+    document.getElementById('edit_e_modelo').value = data.modelo || ''
+    document.getElementById('edit_e_serie').value = data.serie || ''
+    document.getElementById('edit_e_descripcion').value = data.descripcion || ''
+    document.getElementById('edit_e_estado').value = data.estado || 'ingresado'
+    document.getElementById('edit_e_condicion').value = data.condicion || 'desconocido'
+
+    var selU = document.getElementById('edit_e_ubicacion')
+    selU.value = data.ubicacion_id || ''
+    var selEmp = document.getElementById('edit_e_empresa')
+    selEmp.value = data.empresa_id || ''
+    var selR = document.getElementById('edit_e_responsable')
+    selR.value = data.responsable_entrega_id || ''
+
+    var form = document.getElementById('formEditE')
+    form.action = '/equipos/' + data.id + '/edit'
+  })
+</script>
+{% endblock %}
+{% endif %}
+
+<p class="text-muted small mt-3">Nota: las acciones CRUD consumen la API en <code>/api/equipos</code> del backend.</p>
+
+{% endblock %}

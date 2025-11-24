@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Responsables de entrega | Cliente HSRT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h4 mb-0">Responsables de entrega</h1>
+    <p class="text-muted mb-0" style="font-size:0.9rem;">Personas encargadas de entregar o retirar equipos (asociadas a empresas externas).</p>
+  </div>
+  <div>
+    {% if current_user() and current_user().rol == 'admin' %}
+    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">
+      <i class="bi bi-plus-lg"></i> Crear responsable
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<form class="mb-3" method="get" action="{{ url_for('responsables_view') }}">
+  <div class="input-group">
+    <input name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Buscar por nombre, documento, email o teléfono">
+    <button class="btn btn-sm btn-outline-secondary" type="submit">Buscar</button>
+  </div>
+</form>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Documento</th>
+            <th>Nombre</th>
+            <th>Empresa</th>
+            <th>Tel / Email</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for r in responsables %}
+          <tr>
+            <td class="text-muted">{{ r.id }}</td>
+            <td><code>{{ r.documento }}</code></td>
+            <td><strong>{{ r.nombre }}</strong></td>
+            <td>{{ r.empresa.nombre if r.empresa else '-' }}</td>
+            <td>
+              <div>{{ r.telefono or '-' }}</div>
+              <small class="text-muted">{{ r.email or '' }}</small>
+            </td>
+            <td>
+              {% if r.activo %}
+                <span class="badge bg-success-subtle text-success">Activo</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary">Inactivo</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="btn-group" role="group">
+                {% if current_user() and current_user().rol == 'admin' %}
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEdit"
+                  data-r='{{ r|tojson }}'
+                >
+                  Editar
+                </button>
+
+                <form method="post" action="{{ url_for('responsables_delete', rid=r.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar responsable?');">Eliminar</button>
+                </form>
+                {% else %}
+                <a class="btn btn-sm btn-outline-secondary" href="#">Ver</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-3">No hay responsables registrados.</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if current_user() and current_user().rol == 'admin' %}
+<!-- Modal Crear -->
+<div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('responsables_create') }}">
+        <div class="modal-header">
+          <h5 class="modal-title">Crear responsable</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">Documento</label>
+            <input name="documento" class="form-control form-control-sm" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Nombre</label>
+            <input name="nombre" class="form-control form-control-sm" required>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Empresa</label>
+            <select name="empresa_id" class="form-select form-select-sm" required>
+              <option value="">-- Seleccionar empresa --</option>
+              {% for e in empresas %}
+              <option value="{{ e.id }}">{{ e.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-2 row">
+            <div class="col-6">
+              <label class="form-label">Teléfono</label>
+              <input name="telefono" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Email</label>
+              <input name="email" class="form-control form-control-sm" type="email">
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Observaciones</label>
+            <input name="observaciones" class="form-control form-control-sm">
+          </div>
+
+          <div class="form-check form-switch mt-2">
+            <input class="form-check-input" type="checkbox" id="c_activo_r" name="activo" checked>
+            <label class="form-check-label" for="c_activo_r">Activo</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm btn-primary">Crear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" id="formEditR" action="#">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar responsable</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="edit_r_id">
+          <div class="mb-2">
+            <label class="form-label">Documento</label>
+            <input id="edit_r_documento" name="documento" class="form-control form-control-sm" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Nombre</label>
+            <input id="edit_r_nombre" name="nombre" class="form-control form-control-sm" required>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Empresa</label>
+            <select id="edit_r_empresa" name="empresa_id" class="form-select form-select-sm" required>
+              <option value="">-- Seleccionar empresa --</option>
+              {% for e in empresas %}
+              <option value="{{ e.id }}">{{ e.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-2 row">
+            <div class="col-6">
+              <label class="form-label">Teléfono</label>
+              <input id="edit_r_telefono" name="telefono" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Email</label>
+              <input id="edit_r_email" name="email" class="form-control form-control-sm" type="email">
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Observaciones</label>
+            <input id="edit_r_observaciones" name="observaciones" class="form-control form-control-sm">
+          </div>
+
+          <div class="form-check form-switch mt-2">
+            <input class="form-check-input" type="checkbox" id="edit_r_activo" name="activo">
+            <label class="form-check-label" for="edit_r_activo">Activo</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm btn-primary">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+  var modalEdit = document.getElementById('modalEdit')
+  modalEdit.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget
+    var data = JSON.parse(button.getAttribute('data-r'))
+
+    document.getElementById('edit_r_id').value = data.id
+    document.getElementById('edit_r_documento').value = data.documento || ''
+    document.getElementById('edit_r_nombre').value = data.nombre || ''
+    document.getElementById('edit_r_telefono').value = data.telefono || ''
+    document.getElementById('edit_r_email').value = data.email || ''
+    document.getElementById('edit_r_observaciones').value = data.observaciones || ''
+    document.getElementById('edit_r_activo').checked = !!data.activo
+
+    // Seleccionar empresa en el select
+    var sel = document.getElementById('edit_r_empresa')
+    if (data.empresa_id) {
+      sel.value = data.empresa_id
+    } else {
+      sel.value = ''
+    }
+
+    var form = document.getElementById('formEditR')
+    form.action = '/responsables/' + data.id + '/edit'
+  })
+</script>
+{% endblock %}
+{% endif %}
+
+<p class="text-muted small mt-3">Nota: las acciones CRUD consumen la API en <code>/api/responsables-entrega</code> del backend.</p>
+
+{% endblock %}

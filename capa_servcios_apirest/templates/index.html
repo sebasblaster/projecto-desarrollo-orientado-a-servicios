@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Inicio | PDS-006{% endblock %}
+
+{% block page_header %}
+<h1>Sistema para Control de Ingreso de Equipos Tecnológicos y Biomédicos Externos</h1>
+<p>
+  Panel de resumen – registros básicos para trazabilidad, seguridad operativa y cumplimiento.
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card card-soft shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted text-uppercase small">Equipos registrados</span>
+          <span class="badge bg-secondary">/api/equipos</span>
+        </div>
+        <h2 class="h3 mb-1">{{ total_equipos }}</h2>
+        <a href="/equipos" class="small text-decoration-none">
+          Ver listado de equipos →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card card-soft shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted text-uppercase small">Empresas externas</span>
+          <span class="badge bg-secondary">/api/empresas</span>
+        </div>
+        <h2 class="h3 mb-1">{{ total_empresas }}</h2>
+        <a href="/empresas" class="small text-decoration-none">
+          Ver empresas →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card card-soft shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted text-uppercase small">Responsables de entrega</span>
+          <span class="badge bg-secondary">/api/responsables-entrega</span>
+        </div>
+        <h2 class="h3 mb-1">{{ total_responsables }}</h2>
+        <a href="/responsables" class="small text-decoration-none">
+          Ver responsables →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card card-soft shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted text-uppercase small">Ubicaciones</span>
+          <span class="badge bg-secondary">/api/ubicaciones</span>
+        </div>
+        <h2 class="h3 mb-1">{{ total_ubicaciones }}</h2>
+        <a href="/ubicaciones" class="small text-decoration-none">
+          Ver ubicaciones →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card card-soft shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted text-uppercase small">Usuarios (admin / user)</span>
+          <span class="badge bg-secondary">/api/usuarios</span>
+        </div>
+        <h2 class="h3 mb-1">{{ total_usuarios }}</h2>
+        <small class="text-muted d-block">
+          Usuarios que registran o autorizan el ingreso de equipos.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="mt-4">
+  <h2 class="h6 text-uppercase text-muted mb-2">APIs disponibles</h2>
+  <ul class="small">
+    <li><code>GET /api/empresas</code>, <code>POST/PUT/DELETE /api/empresas/&lt;id&gt;</code></li>
+    <li><code>GET /api/ubicaciones</code>, <code>POST/PUT/DELETE /api/ubicaciones/&lt;id&gt;</code></li>
+    <li><code>GET /api/responsables-entrega</code>, <code>POST/PUT/DELETE /api/responsables-entrega/&lt;id&gt;</code></li>
+    <li><code>GET /api/equipos</code>, <code>POST/PUT/DELETE /api/equipos/&lt;id&gt;</code></li>
+    <li><code>GET /api/usuarios</code> (solo lectura para consumo desde clientes)</li>
+  </ul>
+</section>
+{% endblock %}

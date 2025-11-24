@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Empresas externas | Cliente HSRT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h4 mb-0">Empresas externas</h1>
+    <p class="text-muted mb-0" style="font-size:0.9rem;">Listado de empresas proveedoras conectadas a la capa de servicios.</p>
+  </div>
+  <div>
+    {% if current_user() and current_user().rol == 'admin' %}
+    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">
+      <i class="bi bi-plus-lg"></i> Crear empresa
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<form class="mb-3" method="get" action="{{ url_for('empresas_view') }}">
+  <div class="input-group">
+    <input name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Buscar por nombre, NIT o email">
+    <button class="btn btn-sm btn-outline-secondary" type="submit">Buscar</button>
+  </div>
+</form>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>NIT</th>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Tel / Email</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for e in empresas %}
+          <tr>
+            <td class="text-muted">{{ e.id }}</td>
+            <td><code>{{ e.nit }}</code></td>
+            <td><strong>{{ e.nombre }}</strong></td>
+            <td>{{ e.contacto_principal or '-' }}</td>
+            <td>
+              <div>{{ e.telefono or '-' }}</div>
+              <small class="text-muted">{{ e.email or '' }}</small>
+            </td>
+            <td>
+              {% if e.activo %}
+                <span class="badge bg-success-subtle text-success">Activa</span>
+              {% else %}
+                <span class="badge bg-secondary-subtle text-secondary">Inactiva</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="btn-group" role="group">
+                {% if current_user() and current_user().rol == 'admin' %}
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEdit"
+                  data-e='{{ e|tojson }}'
+                >
+                  Editar
+                </button>
+
+                <form method="post" action="{{ url_for('empresas_delete', eid=e.id) }}" style="display:inline;">
+                  <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar empresa?');">Eliminar</button>
+                </form>
+                {% else %}
+                <a class="btn btn-sm btn-outline-secondary" href="#">Ver</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-3">No hay empresas registradas.</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if current_user() and current_user().rol == 'admin' %}
+<!-- Modal Crear -->
+<div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('empresas_create') }}">
+        <div class="modal-header">
+          <h5 class="modal-title">Crear empresa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">NIT</label>
+            <input name="nit" class="form-control form-control-sm" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Nombre</label>
+            <input name="nombre" class="form-control form-control-sm" required>
+          </div>
+          <div class="mb-2 row">
+            <div class="col-6">
+              <label class="form-label">Teléfono</label>
+              <input name="telefono" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Email</label>
+              <input name="email" class="form-control form-control-sm" type="email">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Dirección</label>
+            <input name="direccion" class="form-control form-control-sm">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Contacto principal</label>
+            <input name="contacto_principal" class="form-control form-control-sm">
+          </div>
+          <div class="form-check form-switch mt-2">
+            <input class="form-check-input" type="checkbox" id="c_activo" name="activo" checked>
+            <label class="form-check-label" for="c_activo">Activo</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm btn-primary">Crear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" id="formEdit" action="#">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar empresa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id" id="edit_id">
+          <div class="mb-2">
+            <label class="form-label">NIT</label>
+            <input id="edit_nit" name="nit" class="form-control form-control-sm" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Nombre</label>
+            <input id="edit_nombre" name="nombre" class="form-control form-control-sm" required>
+          </div>
+          <div class="mb-2 row">
+            <div class="col-6">
+              <label class="form-label">Teléfono</label>
+              <input id="edit_telefono" name="telefono" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Email</label>
+              <input id="edit_email" name="email" class="form-control form-control-sm" type="email">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Dirección</label>
+            <input id="edit_direccion" name="direccion" class="form-control form-control-sm">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Contacto principal</label>
+            <input id="edit_contacto" name="contacto_principal" class="form-control form-control-sm">
+          </div>
+          <div class="form-check form-switch mt-2">
+            <input class="form-check-input" type="checkbox" id="edit_activo" name="activo">
+            <label class="form-check-label" for="edit_activo">Activo</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-sm btn-primary">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+  // Rellenar modal de edición con datos del botón
+  var modalEdit = document.getElementById('modalEdit')
+  modalEdit.addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget
+    var data = JSON.parse(button.getAttribute('data-e'))
+
+    document.getElementById('edit_id').value = data.id
+    document.getElementById('edit_nit').value = data.nit || ''
+    document.getElementById('edit_nombre').value = data.nombre || ''
+    document.getElementById('edit_telefono').value = data.telefono || ''
+    document.getElementById('edit_email').value = data.email || ''
+    document.getElementById('edit_direccion').value = data.direccion || ''
+    document.getElementById('edit_contacto').value = data.contacto_principal || ''
+    document.getElementById('edit_activo').checked = !!data.activo
+
+    // Ajustar la acción del formulario para enviar al endpoint correcto
+    var form = document.getElementById('formEdit')
+    form.action = '/empresas/' + data.id + '/edit'
+  })
+</script>
+{% endblock %}
+{% endif %}
+
+<p class="text-muted small mt-3">Nota: las acciones CRUD consumen la API en <code>/api/empresas</code> del backend.</p>
+
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}Equipos externos | PDS-006{% endblock %}
+
+{% block page_header %}
+<h1>Equipos tecnológicos y biomédicos externos</h1>
+<p>
+  Registro y trazabilidad de equipos que ingresan desde empresas externas.
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="badge rounded-pill bg-light text-muted border">
+    Total: {{ equipos|length }}
+  </span>
+</div>
+
+<div class="card card-soft shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped table-hover align-middle mb-0">
+        <thead class="table-head-soft">
+          <tr>
+            <th>#</th>
+            <th>Tipo</th>
+            <th>Categoría</th>
+            <th>Marca / Modelo</th>
+            <th>Serie</th>
+            <th>Empresa</th>
+            <th>Responsable entrega</th>
+            <th>Ubicación</th>
+            <th>Estado</th>
+            <th>Condición</th>
+            <th>Ficha técnica</th>
+            <th>Registrado por</th>
+            <th>Autorizado por</th>
+            <th>Ingreso</th>
+            <th>Salida</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for e in equipos %}
+          <tr>
+            <td class="text-muted">{{ e.id }}</td>
+            <td>
+              {% if e.tipo == "biomedico" %}
+                <span class="badge rounded-pill bg-danger-subtle text-danger">
+                  Biomédico
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-primary-subtle text-primary">
+                  Tecnológico
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.categoria == "computo" %}
+                <span class="badge rounded-pill bg-light text-muted border">
+                  Cómputo
+                </span>
+              {% elif e.categoria == "impresion" %}
+                <span class="badge rounded-pill bg-light text-muted border">
+                  Impresión
+                </span>
+              {% elif e.categoria == "red" %}
+                <span class="badge rounded-pill bg-light text-muted border">
+                  Red
+                </span>
+              {% elif e.categoria == "biomedico" %}
+                <span class="badge rounded-pill bg-light text-muted border">
+                  Biomédico
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-light text-muted border">
+                  Otro
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              <strong>{{ e.marca or "-" }}</strong><br>
+              <small class="text-muted">{{ e.modelo or "" }}</small>
+            </td>
+            <td><code>{{ e.serie or "-" }}</code></td>
+            <td>
+              {{ e.empresa.nombre if e.empresa else "-" }}<br>
+              <small class="text-muted">
+                {{ e.empresa.nit if e.empresa else "" }}
+              </small>
+            </td>
+            <td>
+              {% if e.responsable_entrega %}
+                <strong>{{ e.responsable_entrega.nombre }}</strong><br>
+                <small class="text-muted">
+                  Doc: {{ e.responsable_entrega.documento }}
+                </small>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.ubicacion %}
+                <strong>{{ e.ubicacion.nombre }}</strong><br>
+                <small class="text-muted">
+                  Código: {{ e.ubicacion.codigo }}
+                </small>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.estado == "ingresado" %}
+                <span class="badge rounded-pill bg-warning-subtle text-warning">
+                  Ingresado
+                </span>
+              {% elif e.estado == "en_revision" %}
+                <span class="badge rounded-pill bg-info-subtle text-info">
+                  En revisión
+                </span>
+              {% elif e.estado == "autorizado" %}
+                <span class="badge rounded-pill bg-success-subtle text-success">
+                  Autorizado
+                </span>
+              {% elif e.estado == "rechazado" %}
+                <span class="badge rounded-pill bg-danger-subtle text-danger">
+                  Rechazado
+                </span>
+              {% elif e.estado == "retirado" %}
+                <span class="badge rounded-pill bg-secondary-subtle text-secondary">
+                  Retirado
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-light text-muted border">
+                  -
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.condicion == "operativo" %}
+                <span class="badge rounded-pill bg-success-subtle text-success">
+                  Operativo
+                </span>
+              {% elif e.condicion == "averiado" %}
+                <span class="badge rounded-pill bg-danger-subtle text-danger">
+                  Averiado
+                </span>
+              {% elif e.condicion == "contaminado" %}
+                <span class="badge rounded-pill bg-warning-subtle text-warning">
+                  Contaminado
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-secondary-subtle text-secondary">
+                  Desconocido
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.doc_ingreso %}
+                {% set ext = e.doc_ingreso.split('.')[-1].lower() %}
+                {% if ext == "pdf" %}
+                  <a href="{{ e.doc_ingreso }}" target="_blank"
+                     class="btn btn-sm btn-outline-secondary">
+                    📄 PDF
+                  </a>
+                {% elif ext in ["png", "jpg", "jpeg"] %}
+                  <a href="{{ e.doc_ingreso }}" target="_blank"
+                     class="btn btn-sm btn-outline-secondary">
+                    🖼️ Imagen
+                  </a>
+                {% else %}
+                  <a href="{{ e.doc_ingreso }}" target="_blank"
+                     class="btn btn-sm btn-outline-secondary">
+                    Ver archivo
+                  </a>
+                {% endif %}
+              {% else %}
+                <span class="text-muted small">Sin archivo</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.usuario_registra %}
+                <strong>{{ e.usuario_registra.nombre_completo }}</strong><br>
+                <small class="text-muted">{{ e.usuario_registra.username }}</small>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if e.usuario_autoriza %}
+                <strong>{{ e.usuario_autoriza.nombre_completo }}</strong><br>
+                <small class="text-muted">{{ e.usuario_autoriza.username }}</small>
+              {% else %}
+                <small class="text-muted">Pendiente</small>
+              {% endif %}
+            </td>
+            <td>
+              <small class="text-muted">{{ e.fecha_ingreso }}</small>
+            </td>
+            <td>
+              <small class="text-muted">{{ e.fecha_salida or "-" }}</small>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="15" class="text-center text-muted py-3">
+              No hay equipos registrados.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<p class="text-muted small mt-3">
+  API: <code>GET /api/equipos</code>,
+  <code>POST /api/equipos</code>,
+  <code>PUT /api/equipos/&lt;id&gt;</code>,
+  <code>DELETE /api/equipos/&lt;id&gt;</code>.
+</p>
+{% endblock %}

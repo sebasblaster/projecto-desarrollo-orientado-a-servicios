@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}Usuarios | Cliente HSRT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Gestión de usuarios</h1>
+  <a href="#"
+     class="btn btn-primary btn-sm"
+     id="btnNuevoUsuario"
+     data-create-url="{{ url_for('usuario_create') }}">
+    + Nuevo usuario
+  </a>
+</div>
+
+<table class="table table-sm align-middle">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Nombre completo</th>
+      <th>Email</th>
+      <th>Rol</th>
+      <th>Activo</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in usuarios %}
+    <tr>
+      <td>{{ u.id }}</td>
+      <td>{{ u.username }}</td>
+      <td>{{ u.nombre_completo }}</td>
+      <td>{{ u.email or "-" }}</td>
+      <td>
+        <span class="badge bg-{{ 'danger' if u.rol == 'admin' else 'secondary' }}">
+          {{ u.rol }}
+        </span>
+      </td>
+      <td>
+        {% if u.activo %}
+          <span class="badge bg-success">Sí</span>
+        {% else %}
+          <span class="badge bg-outline-secondary border">No</span>
+        {% endif %}
+      </td>
+      <td>
+        <button type="button"
+                class="btn btn-sm btn-outline-primary btn-edit-user"
+                data-update-url="{{ url_for('usuario_edit', uid=u.id) }}"
+                data-username="{{ u.username }}"
+                data-nombre="{{ u.nombre_completo }}"
+                data-email="{{ u.email or '' }}"
+                data-rol="{{ u.rol }}">
+          Editar
+        </button>
+
+        <form
+          action="{{ url_for('usuario_delete', uid=u.id) }}"
+          method="post"
+          class="d-inline"
+          onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');"
+        >
+          <button type="submit" class="btn btn-sm btn-outline-danger">
+            Eliminar
+          </button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- MODAL CREAR / EDITAR USUARIO -->
+<div class="modal fade" id="usuarioModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="usuarioForm" method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="usuarioModalLabel">Usuario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input
+              type="text"
+              name="username"
+              id="usuarioUsername"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Nombre completo</label>
+            <input
+              type="text"
+              name="nombre_completo"
+              id="usuarioNombre"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              id="usuarioEmail"
+              class="form-control"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Rol</label>
+            <select name="rol" id="usuarioRol" class="form-select">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div class="mb-0">
+            <label class="form-label" id="usuarioPasswordLabel">Contraseña</label>
+            <input
+              type="password"
+              name="password"
+              id="usuarioPassword"
+              class="form-control"
+            />
+            <div class="form-text" id="usuarioPasswordHelp"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn btn-outline-secondary"
+                  data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Script para configurar el modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modalEl = document.getElementById('usuarioModal');
+  const usuarioModal = new bootstrap.Modal(modalEl);
+  const form = document.getElementById('usuarioForm');
+  const titleEl = document.getElementById('usuarioModalLabel');
+  const passwordLabel = document.getElementById('usuarioPasswordLabel');
+  const passwordHelp = document.getElementById('usuarioPasswordHelp');
+
+  const inputUsername = document.getElementById('usuarioUsername');
+  const inputNombre = document.getElementById('usuarioNombre');
+  const inputEmail = document.getElementById('usuarioEmail');
+  const selectRol = document.getElementById('usuarioRol');
+  const inputPassword = document.getElementById('usuarioPassword');
+
+  const btnNuevo = document.getElementById('btnNuevoUsuario');
+
+  // Crear usuario
+  if (btnNuevo) {
+    btnNuevo.addEventListener('click', function (e) {
+      e.preventDefault();
+      form.action = this.dataset.createUrl;
+      form.reset();
+
+      titleEl.textContent = 'Crear usuario';
+      passwordLabel.textContent = 'Contraseña';
+      if (passwordHelp) passwordHelp.textContent = '';
+
+      usuarioModal.show();
+    });
+  }
+
+  // Editar usuario
+  document.querySelectorAll('.btn-edit-user').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      form.action = this.dataset.updateUrl;
+
+      titleEl.textContent = 'Editar usuario';
+
+      inputUsername.value = this.dataset.username || '';
+      inputNombre.value = this.dataset.nombre || '';
+      inputEmail.value = this.dataset.email || '';
+      selectRol.value = this.dataset.rol || 'user';
+      inputPassword.value = '';
+
+      passwordLabel.textContent = 'Nueva contraseña (opcional)';
+      if (passwordHelp) {
+        passwordHelp.textContent =
+          'Deja este campo vacío si no deseas cambiar la contraseña.';
+      }
+
+      usuarioModal.show();
+    });
+  });
+});
+</script>
+{% endblock %}

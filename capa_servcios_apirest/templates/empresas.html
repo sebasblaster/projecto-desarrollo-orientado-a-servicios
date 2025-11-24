@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Empresas externas | PDS-006{% endblock %}
+
+{% block page_header %}
+<h1>Empresas externas</h1>
+<p>
+  Entidades propietarias de los equipos que ingresan al HSRT.
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="badge rounded-pill bg-light text-muted border">
+    Total: {{ empresas|length }}
+  </span>
+</div>
+
+<div class="card card-soft shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped table-hover align-middle mb-0">
+        <thead class="table-head-soft">
+          <tr>
+            <th>#</th>
+            <th>NIT</th>
+            <th>Nombre</th>
+            <th>Contacto principal</th>
+            <th>Teléfono / Email</th>
+            <th>Estado</th>
+            <th>Responsables</th>
+            <th>Equipos asociados</th>
+            <th>Creado</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for e in empresas %}
+          <tr>
+            <td class="text-muted">{{ e.id }}</td>
+            <td><code>{{ e.nit }}</code></td>
+            <td><strong>{{ e.nombre }}</strong></td>
+            <td>{{ e.contacto_principal or "-" }}</td>
+            <td>
+              <div>{{ e.telefono or "-" }}</div>
+              <small class="text-muted">{{ e.email or "" }}</small>
+            </td>
+            <td>
+              {% if e.activo %}
+                <span class="badge rounded-pill bg-success-subtle text-success">
+                  Activa
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-secondary-subtle text-secondary">
+                  Inactiva
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge rounded-pill bg-light text-muted border">
+                {{ e.responsables_entrega|length }}
+              </span>
+            </td>
+            <td>
+              <span class="badge rounded-pill bg-light text-muted border">
+                {{ e.equipos|length }}
+              </span>
+            </td>
+            <td>
+              <small class="text-muted">
+                {{ e.creado_en }}
+              </small>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="9" class="text-center text-muted py-3">
+              No hay empresas registradas.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<p class="text-muted small mt-3">
+  API: <code>GET /api/empresas</code>,
+  <code>POST /api/empresas</code>,
+  <code>PUT /api/empresas/&lt;id&gt;</code>,
+  <code>DELETE /api/empresas/&lt;id&gt;</code>.
+</p>
+{% endblock %}

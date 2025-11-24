@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Ubicaciones | PDS-006{% endblock %}
+
+{% block page_header %}
+<h1>Ubicaciones</h1>
+<p>
+  Lugares internos donde se asignan los equipos ingresados.
+</p>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="badge rounded-pill bg-light text-muted border">
+    Total: {{ ubicaciones|length }}
+  </span>
+</div>
+
+<div class="card card-soft shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-striped table-hover align-middle mb-0">
+        <thead class="table-head-soft">
+          <tr>
+            <th>#</th>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Activo</th>
+            <th>Equipos asignados</th>
+            <th>Creado</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for u in ubicaciones %}
+          <tr>
+            <td class="text-muted">{{ u.id }}</td>
+            <td><code>{{ u.codigo }}</code></td>
+            <td><strong>{{ u.nombre }}</strong></td>
+            <td>
+              {% if u.descripcion %}
+                {{ u.descripcion }}
+              {% else %}
+                <span class="text-muted">Sin descripción</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u.activo %}
+                <span class="badge rounded-pill bg-success-subtle text-success">
+                  Activo
+                </span>
+              {% else %}
+                <span class="badge rounded-pill bg-secondary-subtle text-secondary">
+                  Inactivo
+                </span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge rounded-pill bg-light text-muted border">
+                {{ u.equipos|length }}
+              </span>
+            </td>
+            <td>
+              <small class="text-muted">{{ u.creado_en }}</small>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-3">
+              No hay ubicaciones registradas.
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<p class="text-muted small mt-3">
+  API: <code>GET /api/ubicaciones</code>,
+  <code>POST /api/ubicaciones</code>,
+  <code>PUT /api/ubicaciones/&lt;id&gt;</code>,
+  <code>DELETE /api/ubicaciones/&lt;id&gt;</code>.
+</p>
+{% endblock %}
